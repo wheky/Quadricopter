@@ -10,10 +10,8 @@
 //
 #include <stdio.h>
 #include <stdlib.h>
-
- #include <unistd.h>
-
-#define _GNU_SOURCE
+#include <unistd.h>
+#include <pigpio.h>
 
 int	get_power(int min, int max, int pourcentage)
 {
@@ -22,19 +20,19 @@ int	get_power(int min, int max, int pourcentage)
 
 void	manage_balancing(float angle, int max_angle, int min, int max, int base, int pin, bool sens)
 {
-    char	*string;
     int speed;
+    int val;
 
-    int val = ((int)angle * 100) / max_angle;
 
+    val = ((int)angle * 100) / max_angle;
     if (!sens)
-        speed = (2 * get_power(min, max, base)) - get_power(min, max, val);
+	speed = (2 * get_power(min, max, base)) - get_power(min, max, val);
     else
-        speed = get_power(min, max, val);
+	speed = get_power(min, max, val);
 
-    asprintf(&string, "pigs s %d %d\n", pin ,speed);
-    printf(string);
-    system(string);
-    usleep(20000);
+#if 0
+    printf("pin = %d, speed = %d\n", pin, speed);
+#endif
 
+    gpioServo(pin, speed);
 }

@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
+#include <pigpio.h>
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 #include "streamGyro.h"
@@ -127,8 +128,6 @@ streamGyro::streamGyro(int fd) : _fd(fd)
 
 void streamGyro::run()
 {
-    char	*buff;
-
     // if programming failed, don't try to do anything
     if (!dmpReady) return;
     // get current FIFO count
@@ -160,8 +159,10 @@ void streamGyro::run()
             mpu.dmpGetQuaternion(&q, fifoBuffer);
             mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-           // printf("ypr  %7.2f %7.2f %7.2f    ", ypr[0] * 180/M_PI, ypr[1] * 180/M_PI, ypr[2] * 180/M_PI);
+
+#if 0
             printf("%f", ypr[1] * 180/M_PI);
+#endif
 
             // true = +, false = -
 	     manage_balancing((ypr[1] * 180/M_PI), 35, 1300, 1500, 50, 17, false);
@@ -172,33 +173,33 @@ void streamGyro::run()
 
 	     manage_balancing((ypr[2] * 180/M_PI), 35, 1400, 1600, 40, 24, true);
             
-	    // C'est la qu'on va travailler
-	    //write(_fd, buff, strlen(buff));
         #endif
-        printf("\n");
-	//write(_fd, "\n", 1);
-//	if (buff)
-//	    free(buff);
     }
 }
 
 void	callback(int signal)
 {
-	system("pigs s 24 1000");
-	system("pigs s 23 1000");
-	system("pigs s 22 1000");
-	system("pigs s 17 1000");
+    (void)signal;
+	 gpioServo(17, 1000);
+	 gpioServo(22, 1000);
+	 gpioServo(23, 1000);
+	 gpioServo(24, 1000);
+	 gpioTerminate();
 	printf("a +\n");
 	exit(0);
 }
 
-int main() {
-signal(SIGINT, callback);
-streamGyro g(0);
-usleep(100000);
-for (;;)
-g.run();
 
-return 0;
+int main() {
+
+    gpioInitialise();
+    signal(SIGINT, callback);
+    streamGyro g(0);
+    usleep(100000);
+    for (;;)
+	g.run();
+
+    gpioTerminate();
+    return 0;
 }
 
