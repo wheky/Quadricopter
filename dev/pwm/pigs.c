@@ -92,10 +92,12 @@ int main(int argc , char *argv[])
 
          if ((idx=cmdParse(buf, &cmd)) >= 0)
          {
+	     printf("%d %d %d %x\n", cmd.cmd, cmd.p1, cmd.p2, cmd.res);
             if (send(sock, &cmd, sizeof(cmdCmd_t), 0) == sizeof(cmdCmd_t))
             {
                if (recv(sock, &cmd, sizeof(cmdCmd_t), 0) == sizeof(cmdCmd_t))
                {
+		   printf("idx=%d rv=%d\n", idx, cmdInfo[idx].rv);
                   switch (cmdInfo[idx].rv)
                   {
                      case 0:

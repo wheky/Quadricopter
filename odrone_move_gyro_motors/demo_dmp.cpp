@@ -165,13 +165,17 @@ void streamGyro::run()
 #endif
 
             // true = +, false = -
+	    /*
 	     manage_balancing((ypr[1] * 180/M_PI), 35, 1300, 1500, 50, 17, false);
 
 	     manage_balancing((ypr[1] * 180/M_PI), 25, 1900, 2300, 60, 22, true);
 
+	     */
 	     manage_balancing((ypr[2] * 180/M_PI), 25, 1850, 2000, 60, 23, false);
+	     /*
 
 	     manage_balancing((ypr[2] * 180/M_PI), 35, 1400, 1600, 40, 24, true);
+	     */
             
         #endif
     }
@@ -180,11 +184,14 @@ void streamGyro::run()
 void	callback(int signal)
 {
     (void)signal;
+    /*
 	 gpioServo(17, 1000);
 	 gpioServo(22, 1000);
 	 gpioServo(23, 1000);
 	 gpioServo(24, 1000);
 	 gpioTerminate();
+	 */
+	system("pigs s 24 1000");
 	printf("a +\n");
 	exit(0);
 }
@@ -192,10 +199,17 @@ void	callback(int signal)
 
 int main() {
 
-    gpioInitialise();
+/*    if (gpioInitialise() == PI_INIT_FAILED)
+    {
+	printf("marche pas\n");
+	return (1);
+    }
+    */
     signal(SIGINT, callback);
     streamGyro g(0);
+    gpioServo(23, 1500);
     usleep(100000);
+    gpioServo(23, 1000);
     for (;;)
 	g.run();
 
