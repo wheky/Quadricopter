@@ -11,6 +11,9 @@
 #ifndef STREAMGYRO_H
 #define STREAMGYRO_H
 
+#include <map>
+#include "pid.h"
+
 class streamGyro
 {
     public:
@@ -19,6 +22,7 @@ class streamGyro
 	void 	run();
 
     private:
+	std::map<int, Pid> _pid;
 	int	_fd;
 };
 

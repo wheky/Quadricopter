@@ -1,3 +1,5 @@
+//
+// balancing.cpp for  in /root/odrone_move_gyro_motors
 // 
 // Made by root
 // Login   <root@epitech.net>
@@ -10,49 +12,41 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pigpio.h>
+#include <sys/time.h>
+#include "pid.h"
+
+int set_speed(int, int);
 
 int	get_power(int min, int max, int pourcentage)
 {
     return (min + (((max - min) / 100) * pourcentage));
 }
 
-void	manage_balancing(float angle, int max_angle, int min, int max, int base, int pin, bool sens)
+void manage_balancing(float ref, float angle, int speed_min, int speed_max, int current_speed, int pin, Pid& pid)
 {
-    /*
-    int speed;
-    int val;
+    struct timeval tv;
+    long time = 0;
+    long deltaTime = 0;
+    float error = 0;
+    float derivative = 0;
+    int cmd = 0;
 
+    gettimeofday(&tv, 0);
+    time = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+    deltaTime = time - pid.time;
 
-    val = ((int)angle * 100) / max_angle;
-    if (!sens)
-	speed = (2 * get_power(min, max, base)) - get_power(min, max, val);
+    error = ref - angle;
+    derivative = (error - pid.prev_error) * pid.Kd / deltaTime;
+    pid.error_sum += error * deltaTime * pid.Ki;
+
+    pid.prev_error = error;
+    pid.time = time;
+
+    cmd = (error * pid.Kp) + derivative + pid.error_sum;
+    printf("pin:%d\n\t-cmd:%d (error:%f|integral:%f|derivative:%f)\n\n", pin, cmd, error, pid.error_sum, derivative);
+    if (pin == 23 || pin == 17)
+	set_speed(pin, current_speed - cmd);
     else
-	speed = get_power(min, max, val);
-
-#if 0
-    printf("pin = %d, speed = %d\n", pin, speed);
-#endif
-*/
-#define REF	0
-#define Kp 	0.9
-#define Ki	0.2
-#define Kd	0.1
-#define	DELTA	(1500.0 - 1200.0) // max - min
-
-    char buffer[1024] = {0};
-    float error = REF - angle;
-    static float error_sum = 0;
-    static float prev_error = 0;
-    error_sum += error;
-    float delta = error - prev_error;
-    prev_error = error;
-    int cmd = 1200 + (1 * (((Kp * error) + (Ki * error_sum) + (Kd * delta)) / (100.0 / DELTA)));
-
-    snprintf(buffer, 1024, "pigs s 24 %d", cmd);
-    printf("->%s\n", buffer);
-    system(buffer);
-
-    //gpioServo(pin, speed);
-    //system("pigs s 23 1500");
-    //sleep(1);
+	set_speed(pin, current_speed + cmd);
 }
+

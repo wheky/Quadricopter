@@ -6,11 +6,20 @@
 #include <string.h>
 #include <math.h>
 #include <pigpio.h>
+
+#include <sys/socket.h>
+#include <arpa/inet.h>
+
+#include <sys/time.h>
+
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 #include "streamGyro.h"
+#include "pid.h"
 
-void	manage_balancing(float angle, int angle_max, int min, int base, int max, int, bool);
+int sock;
+
+void manage_balancing(float ref, float angle, int speed_min, int speed_max, int current_speed, int pin, Pid& pid);
 
 // class default I2C address is 0x68
 // specific I2C addresses may be passed as a parameter here
@@ -73,6 +82,16 @@ float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gra
 // packet structure for InvenSense teapot demo
 uint8_t teapotPacket[14] = { '$', 0x02, 0,0, 0,0, 0,0, 0,0, 0x00, 0x00, '\r', '\n' };
 
+Pid::Pid(float p_error_sum, float p_prev_error, float p_Kp, float p_Ki, float p_Kd) :
+    error_sum(p_error_sum), prev_error(p_prev_error),
+    Kp(p_Kp), Ki(p_Ki), Kd(p_Kd), time(0.0)
+{
+    struct timeval tv;
+
+    gettimeofday(&tv, 0);
+    time = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
+
 
 // ================================================================
 // ===                      INITIAL SETUP                       ===
@@ -120,6 +139,8 @@ void streamGyro::setup() {
 streamGyro::streamGyro(int fd) : _fd(fd)
 {
     setup();
+    _pid[23] = Pid(0.0, 0.0, 0.7, 0.000092, 0.0000018);/*18*/
+    _pid[24] = Pid(0.0, 0.0, 0.7, 0.000092, 0.0000018);
 }
 
 // ================================================================
@@ -170,12 +191,13 @@ void streamGyro::run()
 
 	     manage_balancing((ypr[1] * 180/M_PI), 25, 1900, 2300, 60, 22, true);
 
-	     */
 	     manage_balancing((ypr[2] * 180/M_PI), 25, 1850, 2000, 60, 23, false);
-	     /*
 
-	     manage_balancing((ypr[2] * 180/M_PI), 35, 1400, 1600, 40, 24, true);
-	     */
+	     manage_balancing((ypr[2] * 180/M_PI), 35, 1400, 1600, 40, 24, true);*/
+	     manage_balancing(0, (ypr[1] * 180/M_PI), 1000, 1150, 1250, 17, _pid[23]);
+	     manage_balancing(0, (ypr[1] * 180/M_PI), 1000, 1150, 1100, 22, _pid[23]);
+	     manage_balancing(0, (ypr[2] * 180/M_PI), 1000, 1150, 1100, 23, _pid[24]);
+	     manage_balancing(0, (ypr[2] * 180/M_PI), 1000, 1150, 1100, 24, _pid[24]);
             
         #endif
     }
@@ -184,36 +206,62 @@ void streamGyro::run()
 void	callback(int signal)
 {
     (void)signal;
-    /*
-	 gpioServo(17, 1000);
-	 gpioServo(22, 1000);
-	 gpioServo(23, 1000);
-	 gpioServo(24, 1000);
-	 gpioTerminate();
-	 */
-	system("pigs s 24 1000");
 	printf("a +\n");
 	exit(0);
 }
 
+// TODO: refaire propre :D
+int          set_speed(int pin, int speed)
+{
+    cmdCmd_t cmd;
 
-int main() {
+    cmd.cmd = PI_CMD_SERVO;
+    cmd.p1  = pin;
+    cmd.p2  = speed;
 
-/*    if (gpioInitialise() == PI_INIT_FAILED)
+    if (send(sock, &cmd, sizeof(cmdCmd_t), 0) == sizeof(cmdCmd_t))
+        return 1;
+    return -1;
+}
+
+
+int     main() {
+
+    int r, idx, port;
+    struct sockaddr_in server;
+    char * portStr, * addrStr;
+
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
-	printf("marche pas\n");
-	return (1);
+        printf("Error socket\n");
+        exit(-1);
     }
-    */
+
+    portStr = getenv(PI_ENVPORT);
+
+    if (portStr) port = atoi(portStr);
+    else         port = PI_DEFAULT_SOCKET_PORT;
+
+    addrStr = getenv(PI_ENVADDR);
+
+    if (!addrStr) addrStr="127.0.0.1";
+
+    server.sin_addr.s_addr = inet_addr(addrStr);
+    server.sin_family = AF_INET;
+    server.sin_port = htons(port);
+
+    if (connect(sock, (struct sockaddr *)&server, sizeof(server)) != 0)
+    {
+        printf("Error connect\n");
+        exit(-1);
+    }
+
     signal(SIGINT, callback);
     streamGyro g(0);
-    gpioServo(23, 1500);
     usleep(100000);
-    gpioServo(23, 1000);
     for (;;)
-	g.run();
+        g.run();
 
-    gpioTerminate();
     return 0;
 }
 
