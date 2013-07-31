@@ -1,0 +1,2 @@
+main.o: main.cpp AStream.h
+AStream.o: AStream.cpp AStream.h

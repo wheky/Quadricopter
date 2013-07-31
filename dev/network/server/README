@@ -1,0 +1,3 @@
+Usage: lancer le setup, puis le serv sur le raspberry. Le client pourra ensuite se connecter et ecrire "gyro" pour recuperer la sortie du stream correspondant au MPU6050
+
+PS: ca fonctionne mais c'est code avec les pieds juste pour des tests

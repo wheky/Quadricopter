@@ -1,0 +1,8 @@
+main.o: main.cpp Network.h streamGyro/streamGyro.h
+Network.o: Network.cpp Network.h streamGyro/streamGyro.h
+MPU6050.o: streamGyro/MPU6050.cpp streamGyro/MPU6050.h \
+ streamGyro/I2Cdev.h
+demo_dmp.o: streamGyro/demo_dmp.cpp streamGyro/I2Cdev.h \
+ streamGyro/MPU6050_6Axis_MotionApps20.h streamGyro/helper_3dmath.h \
+ streamGyro/MPU6050.h streamGyro/streamGyro.h
+I2Cdev.o: streamGyro/I2Cdev.cpp streamGyro/I2Cdev.h
