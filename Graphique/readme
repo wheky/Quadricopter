@@ -1,0 +1,11 @@
+to compile:
+    you need GL, glew and glew
+    "make"
+    "make -B" for recompile
+to run:
+    $(WHERE_IS_THE_DEVICE) | ./quadTester
+for any issue or whatever:
+    gtalk:  newincpp@gmail.com
+    gmail:  newincpp@gmail.com
+    jabber: newincpp@miquote.com
+    twitter:@newincpp
