@@ -164,13 +164,13 @@ void streamGyro::run()
             printf("%f", ypr[1] * 180/M_PI);
 
             // true = +, false = -
-	    manage_balancing((ypr[1] * 180/M_PI), 30, 1210, 1650, 20, 21, false);
+	     manage_balancing((ypr[1] * 180/M_PI), 50, 1500, 2200, 50, 18, false);
 
-	    // manage_balancing((ypr[1] * 180/M_PI), 30, 1210, 1650, 20, 22, true);
+	     manage_balancing((ypr[1] * 180/M_PI), 50, 1500, 2200, 50, 22, true);
 
-	    // manage_balancing((ypr[2] * 180/M_PI), 30, 1210, 1650, 20, 23, false);
+	     manage_balancing((ypr[2] * 180/M_PI), 50, 1500, 2200, 50, 23, false);
 
-	    // manage_balancing((ypr[2] * 180/M_PI), 30, 1210, 1650, 20, 24, true);
+	     manage_balancing((ypr[2] * 180/M_PI), 50, 1500, 2200, 50, 24, true);
             
 	    // C'est la qu'on va travailler
 	    //write(_fd, buff, strlen(buff));
@@ -184,7 +184,10 @@ void streamGyro::run()
 
 void	callback(int signal)
 {
+	system("pigs s 24 1120");
 	system("pigs s 23 1120");
+	system("pigs s 22 1120");
+	system("pigs s 18 1120");
 	printf("a +\n");
 	exit(0);
 }

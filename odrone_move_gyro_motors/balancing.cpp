@@ -23,13 +23,14 @@ int	get_power(int min, int max, int pourcentage)
 void	manage_balancing(float angle, int max_angle, int min, int max, int base, int pin, bool sens)
 {
     char	*string;
+    int speed;
 
     int val = ((int)angle * 100) / max_angle;
 
     if (!sens)
-        int speed = (2 * get_power(min, max, base)) - get_power(min, max, val);
+        speed = (2 * get_power(min, max, base)) - get_power(min, max, val);
     else
-        int speed = get_power(min, max, val);
+        speed = get_power(min, max, val);
 
     asprintf(&string, "pigs s %d %d\n", pin ,speed);
     printf(string);
