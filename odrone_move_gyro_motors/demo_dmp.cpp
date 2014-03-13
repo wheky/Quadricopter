@@ -9,7 +9,7 @@
 #include "MPU6050_6Axis_MotionApps20.h"
 #include "streamGyro.h"
 
-void	manage_balancing(float angle, int angle_max, int min, int base, int max);
+void	manage_balancing(float angle, int angle_max, int min, int base, int max, int, bool);
 
 // class default I2C address is 0x68
 // specific I2C addresses may be passed as a parameter here
