@@ -154,14 +154,6 @@ void streamGyro::run()
 
         #endif
 
-        #ifdef OUTPUT_READABLE_EULER
-            // display Euler angles in degrees
-            mpu.dmpGetQuaternion(&q, fifoBuffer);
-            mpu.dmpGetEuler(euler, &q);
-            printf("euler %7.2f %7.2f %7.2f    ", euler[0] * 180/M_PI, euler[1] * 180/M_PI, euler[2] * 180/M_PI);
-            asprintf(&buff, "euler %7.2f %7.2f %7.2f    ", euler[0] * 180/M_PI, euler[1] * 180/M_PI, euler[2] * 180/M_PI);
-//	    write(_fd, buff, strlen(buff));
-        #endif
 
         #ifdef OUTPUT_READABLE_YAWPITCHROLL
             // display Euler angles in degrees
@@ -170,7 +162,16 @@ void streamGyro::run()
             mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
            // printf("ypr  %7.2f %7.2f %7.2f    ", ypr[0] * 180/M_PI, ypr[1] * 180/M_PI, ypr[2] * 180/M_PI);
             printf("%f", ypr[1] * 180/M_PI);
-	    manage_balancing((ypr[1] * 180/M_PI), 30, 1210, 1650, 20);
+
+            // true = +, false = -
+	    manage_balancing((ypr[1] * 180/M_PI), 30, 1210, 1650, 20, 21, false);
+
+	    // manage_balancing((ypr[1] * 180/M_PI), 30, 1210, 1650, 20, 22, true);
+
+	    // manage_balancing((ypr[2] * 180/M_PI), 30, 1210, 1650, 20, 23, false);
+
+	    // manage_balancing((ypr[2] * 180/M_PI), 30, 1210, 1650, 20, 24, true);
+            
 	    // C'est la qu'on va travailler
 	    //write(_fd, buff, strlen(buff));
         #endif
