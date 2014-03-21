@@ -236,6 +236,8 @@ int     main() {
         exit(-1);
     }
 
+    set_speed(24, 1500);
+
     signal(SIGINT, callback);
     streamGyro g(0);
     usleep(100000);
